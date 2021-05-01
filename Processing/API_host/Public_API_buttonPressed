@@ -12,6 +12,11 @@ Timer interval = new Timer(200);
 int[] pins_local; 
 int[] pins_in; 
 
+int localButtonState;
+int lastLocalButtonState;
+int inButtonState;
+int lastInButtonState;
+
 void setup() {
   size(500, 500);
   // start the interval timer
@@ -30,12 +35,36 @@ void draw() {
   // check first to make sure pins array is populated with data
   // anything using pin data will need to happen within this conditional
   if (pins_local != null && pins_local.length == 3) {
-    // use pins[] as needed
+
+    float local0 = map(pins_local[0], 0, 1023, 0, 255); //A0 knob
+    float local1 = map(pins_local[1], 0, 1023, 0, 255); //A1 sensor
+    int localButton = pins_local[2];//D2 button
     
+    //insert local preview code here
+    
+    localButtonState = (localButton);
+    if (localButtonState != lastLocalButtonState){
+      if(localButtonState == 1){
+        //For when local-button pressed
+       println("------------------Local!");
+      }
+    lastLocalButtonState = localButtonState;
+    }
   }
     if (pins_in != null && pins_in.length == 3) {
-    // use pins[] as needed
+
+    float in0 = map(pins_in[0], 0, 1023, 0, 255); //A0 knob
+    float in1 = map(pins_in[1], 0, 1023, 0, 255); //A1 sensor
+    int inButton = pins_in[2]; //D2 button
     
+    inButtonState = (inButton);
+    if (inButtonState != lastInButtonState){
+      if(inButtonState == 1){
+        //for when in-button pressed here
+        println("--------------------In!!");
+      }
+    lastInButtonState = inButtonState;
+    }
   }
 }
 
