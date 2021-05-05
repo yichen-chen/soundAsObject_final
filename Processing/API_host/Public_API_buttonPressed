@@ -1,6 +1,7 @@
 /*  Template for working with REST APIs */
 
 // URL of public API_HOST
+//String api_host_in = "https://michaellamoon-2021.serverless.social";
 String api_host_in = "https://ychen-dvvin6kh82.loca.lt";
 
 // request frequency
@@ -34,11 +35,11 @@ void draw() {
   
   // check first to make sure pins array is populated with data
   // anything using pin data will need to happen within this conditional
-  if (pins_local != null && pins_local.length == 3) {
+  if (pins_local != null && pins_local.length > 0) {
 
     float local0 = map(pins_local[0], 0, 1023, 0, 255); //A0 knob
     float local1 = map(pins_local[1], 0, 1023, 0, 255); //A1 sensor
-    int localButton = pins_local[2];//D2 button
+    int localButton = pins_local[8];//D2 button
     
     //insert local preview code here
     
@@ -51,11 +52,11 @@ void draw() {
     lastLocalButtonState = localButtonState;
     }
   }
-    if (pins_in != null && pins_in.length == 3) {
+    if (pins_in != null && pins_in.length > 0) {
 
     float in0 = map(pins_in[0], 0, 1023, 0, 255); //A0 knob
     float in1 = map(pins_in[1], 0, 1023, 0, 255); //A1 sensor
-    int inButton = pins_in[2]; //D2 button
+    int inButton = pins_in[8]; //D2 button
     
     inButtonState = (inButton);
     if (inButtonState != lastInButtonState){
