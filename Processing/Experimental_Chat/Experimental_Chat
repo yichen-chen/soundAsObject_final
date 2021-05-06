@@ -118,7 +118,7 @@ void draw() {
     pMessage.rect = Rect_local; //sets preview shape boolean to pRect value
     pMessage.display(); //displays the preview shape
     
-    localButtonState = (localButton);
+    localButtonState = localButton;
     if (localButtonState != lastLocalButtonState){
       if(localButtonState == 1){
         //For when local-button pressed
@@ -135,7 +135,7 @@ void draw() {
     hue_in = int(inKnob);
     if (inSensor<inSensorThresMid) {Rect_in =true;}else{Rect_in=false;}
     
-    inButtonState = (inButton);
+    inButtonState = inButton;
     if (inButtonState != lastInButtonState){
       if(inButtonState == 1){
         //for when in-button pressed here
