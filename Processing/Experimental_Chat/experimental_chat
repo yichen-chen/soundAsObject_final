@@ -1,0 +1,248 @@
+/*  Settings for UI */
+
+//color variables for the background and line color
+color bgColor, strokeColor; 
+//float variables for preview X and Y (pX, pY), left and right x positions, (x1, x2), and y
+float diameter, pX, pY,x1, x2, y; 
+int hue_local; //preview hue int
+int hue_in;
+boolean Rect_local; //preview rectangle check
+boolean Rect_in; //preview rectangle check
+
+Message pMessage; //preview message instance of Message class/object
+ArrayList<Message> inputMessages = new ArrayList<Message>(); //array of Message objects
+int index, moveIndex; //index number
+
+String sec, min, hr;
+String timeStamp, blank;
+
+
+/*  Settings for API */
+
+// URL of public API_HOST
+//String api_host_in = "https://michaellamoon-2021.serverless.social";
+String api_host_in = "https://ychen-dvvin6kh82.loca.lt";
+
+// request frequency
+// this value should not be less than the INTERVAL in arduino-serial-fetch 
+// If it was, we would be requesting data faster than it is updated.
+Timer interval = new Timer(200);
+
+// array to store all pin data
+int[] pins_local; 
+int[] pins_in; 
+
+int localButtonState;
+int lastLocalButtonState;
+int inButtonState;
+int lastInButtonState;
+
+int localSensorThresMid = 350;//local sensor Threshold Midpoint
+int inSensorThresMid = 350;//input sensor Threshold Midpoint
+
+void setup() {
+/*  Setup for UI */
+  size (300, 500);
+  ellipseMode(CENTER);
+  rectMode(CENTER);
+  textAlign(CENTER, CENTER);
+  colorMode(HSB, 100);
+  noStroke();
+
+  bgColor = color(0, 0, 0); //black
+  strokeColor = color(0, 0, 100); //white
+
+  //hardcoded location values for the user's shape preview
+  pX = width*.8;
+  pY = height*.1;
+
+  //hardcoded x locations for the shape-chat log
+  x1 = width*.2;
+  x2 = width*.8;
+
+  //hardcoded first y position
+  y = height*.3;
+
+  //hardcoded size
+  diameter = height*.15;
+
+  //hardcoded stroke weight
+  strokeWeight(1);
+
+  blank = "";
+
+  //instantiates preview instance of Message object
+  pMessage = new Message(hue_local, pX, pY, Rect_local, blank);
+  pMessage.size = .75 * pMessage.size;
+
+  sec = nf(second(), 2); 
+  min = nf(minute(), 2); 
+  hr = nf(hour(), 2);
+  
+
+/*  Setup for API */
+  interval.start();
+}
+
+void draw() {
+  background(bgColor);
+  stroke(strokeColor);
+  
+  //seperates chat log from preview window
+  line(0, height*.2, width, height*.2);
+  
+  fill(strokeColor);
+  text("PREVIEW:", width*.2, pY);
+  
+ 
+  // check if the interval has elapsed
+  if (interval.isFinished()) {
+    // request the data asynchronously in a thread.
+    thread("retrieveData_local");
+    thread("retrieveData_in");
+    interval.start();
+  }
+  
+  // check first to make sure pins array is populated with data
+  // anything using pin data will need to happen within this conditional
+  if (pins_local != null && pins_local.length > 0) {//*reading local values
+
+    float localKnob = map(pins_local[0], 0, 650, 0, 100); //A0 knob
+    float localSensor = pins_local[1]; //A1 sensor
+    int localButton = pins_local[8];//D2 button
+
+    //insert local preview code here
+    hue_local = int(localKnob);
+    if (localSensor<localSensorThresMid) {Rect_local =true;}else{Rect_local=false;}
+    pMessage.h = hue_local; //sets preview shape hue variable to fakeKnob value
+    pMessage.rect = Rect_local; //sets preview shape boolean to pRect value
+    pMessage.display(); //displays the preview shape
+    
+    //localButtonState = (localButton);
+    //if (localButtonState != lastLocalButtonState){
+    //  if(localButtonState == 1){
+    //    //For when local-button pressed
+    //   println("------------------Local!");
+    //  }
+    //lastLocalButtonState = localButtonState;
+    //}
+  }
+    if (pins_in != null && pins_in.length > 0) {//*reading host inputs
+
+    float inKnob = map(pins_in[0], 0, 650, 0, 100); //A0 knob
+    float inSensor = pins_in[1]; //A1 sensor
+    int inButton = pins_in[8]; //D2 button
+    hue_in = int(inKnob);
+    if (inSensor<inSensorThresMid) {Rect_in =true;}else{Rect_in=false;}
+    
+    inButtonState = (inButton);
+    if (inButtonState != lastInButtonState){
+      if(inButtonState == 1){
+        //for when in-button pressed here
+        sec = nf(second(), 2); 
+        min = nf(minute(), 2); 
+        hr = nf(hour(), 2);
+
+        timeStamp = (hr + ":" + min + ":" + sec);
+
+        inputMessages.add(new Message(hue_in, x2, y, Rect_in, timeStamp)); //adds a new Message object to the messages array
+        index++; //moves up the messages index
+        moveIndex = index; //sets the manipulatable index to the real index
+       
+        println(timeStamp + " Message received from "+api_host_in);
+      }
+    lastInButtonState = inButtonState;
+    }
+  }
+  
+    //this section displays new messages in the log and replaces the last "message" 
+  //with the most recent message up to the last four messages 
+
+  if (index == moveIndex) {
+    if (index > 0) {
+      Message mess1 = inputMessages.get(index-1);
+      mess1.display();
+    }
+    if (index > 1) {
+      Message mess2 = inputMessages.get(index-2);
+      mess2.yPos = y + 100;
+      mess2.display();
+    } 
+    if (index > 2) {
+      Message mess3 = inputMessages.get(index-3);
+      mess3.yPos = y + 200;
+      mess3.display();
+    }
+    if (index > 3) {
+      Message mess4 = inputMessages.get(index-4);
+      mess4.yPos = y + 300;
+      mess4.display();
+    }
+  } else if (index > moveIndex) {
+    Message mess1 = inputMessages.get(moveIndex-1);
+    mess1.display();
+    mess1.yPos = y;
+    Message mess2 = inputMessages.get(moveIndex-2);
+    mess2.yPos = y + 100;
+    mess2.display();
+    Message mess3 = inputMessages.get(moveIndex-3);
+    mess3.yPos = y + 200;
+    mess3.display();
+    Message mess4 = inputMessages.get(moveIndex-4);
+    mess4.yPos = y + 300;
+    mess4.display();
+  }
+  
+}
+
+// get the data
+void retrieveData_local() {
+  JSONArray allPins = loadJSONArray("http://localhost:3000/pins");
+
+  // init the pins array to be the same size as allPins
+  pins_local = new int[allPins.size()];
+  
+  // step through allPins reassign to the pins array for global use
+  for (int i = 0; i < allPins.size(); i++) {
+    JSONObject pin = allPins.getJSONObject(i); 
+    pins_local[i] = pin.getInt("value");
+    // see which array index corresponds to which pin. comment this out when not needed.
+     //println("[local "+i+"]" + "\t" + pin.getString("id") + "\t" + pin.getInt("value"));
+  }
+
+}
+
+
+void retrieveData_in() {
+  JSONArray allPins = loadJSONArray(api_host_in + "/pins");
+
+  // init the pins array to be the same size as allPins
+  pins_in = new int[allPins.size()];
+  
+  // step through allPins reassign to the pins array for global use
+  for (int i = 0; i < allPins.size(); i++) {
+    JSONObject pin = allPins.getJSONObject(i); 
+    pins_in[i] = pin.getInt("value");
+    // see which array index corresponds to which pin. comment this out when not needed.
+     //println("[in "+i+"]" + "\t" + pin.getString("id") + "\t" + pin.getInt("value"));
+  }
+
+}
+
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == DOWN) {
+      moveIndex ++;
+      if (moveIndex>index)
+      {
+        moveIndex = index;
+      }
+    } else if (keyCode == UP) {
+      moveIndex --;
+      if (moveIndex < 4) {
+        moveIndex = 4;
+      }
+    }
+  }
+  //println(index, moveIndex);
+}
