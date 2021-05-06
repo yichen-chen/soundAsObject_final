@@ -1,0 +1,33 @@
+class Message {
+  float size, xPos, yPos, translate, xTime;
+  color c;
+  int h, s, b;
+  boolean rect;
+  String timeStamp;
+
+  Message(int mH, float mXPos, float mYPos, boolean mRect, String mTimeStamp) {
+    h = mH;
+    s = 40;
+    b = 90;
+    size = height*.15;
+
+    xTime = width*.5;
+
+    xPos = mXPos;
+    yPos = mYPos;
+    rect = mRect;
+    timeStamp = mTimeStamp;
+  }
+
+  void display() {
+    noStroke();
+    c = color(h, s, b);
+    fill(c);
+    text(timeStamp, xTime, yPos); 
+    if (rect) {
+      rect(xPos, yPos, size, size);
+    } else if (!rect) {
+      ellipse(xPos, yPos, size, size);
+    }
+  }
+}
