@@ -118,14 +118,14 @@ void draw() {
     pMessage.rect = Rect_local; //sets preview shape boolean to pRect value
     pMessage.display(); //displays the preview shape
     
-    //localButtonState = (localButton);
-    //if (localButtonState != lastLocalButtonState){
-    //  if(localButtonState == 1){
-    //    //For when local-button pressed
-    //   println("------------------Local!");
-    //  }
-    //lastLocalButtonState = localButtonState;
-    //}
+    localButtonState = (localButton);
+    if (localButtonState != lastLocalButtonState){
+      if(localButtonState == 1){
+        //For when local-button pressed
+       println("a message has been sent by you");
+      }
+    lastLocalButtonState = localButtonState;
+    }
   }
     if (pins_in != null && pins_in.length > 0) {//*reading host inputs
 
